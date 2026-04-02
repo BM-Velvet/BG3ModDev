@@ -1,0 +1,25 @@
+{
+    "SchemaVersion": 1,
+    "ModName": "__MOD_NAME__",
+    "Tabs": [
+        {
+            "TabId": "settings",
+            "Name": "Settings",
+            "Sections": [
+                {
+                    "SectionId": "keybindings",
+                    "SectionName": "Keybindings",
+                    "Settings": [
+                        {
+                            "Id": "main_panel_key",
+                            "Name": "Main Panel",
+                            "Type": "keybinding_v2",
+                            "Default": {"Keyboard": {"Key": "F10"}},
+                            "Description": "Toggle the __MOD_NAME__ panel."
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
