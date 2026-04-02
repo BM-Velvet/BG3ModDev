@@ -1,0 +1,3 @@
+[submodule "mods/BaldursGateInventory"]
+	path = mods/BaldursGateInventory
+	url = ../BaldursGateInventory
