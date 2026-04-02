@@ -1,0 +1,22 @@
+game-files/*
+!game-files/.gitkeep
+
+divine/*.exe
+divine/*.dll
+divine/*.zip
+
+releases/*
+!releases/.gitkeep
+.env.ps1
+
+# Packed mod artifacts
+*.pak
+
+# Windows junk
+Thumbs.db
+desktop.ini
+[Dd]esktop.ini
+*.lnk
+
+# Claude Code
+.claude/settings.local.json
