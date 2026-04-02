@@ -1,6 +1,6 @@
 # BG3ModDev
 
-Modding dev environment for Baldur's Gate 3. Hosts multiple mods as git submodules and provides tooling for the full mod development lifecycle.
+Modding dev environment for Baldur's Gate 3. Provides tooling for the full mod development lifecycle — scaffolding, live testing, packing for release, and unpacking game assets.
 
 ## Quick Start
 
@@ -11,21 +11,21 @@ Modding dev environment for Baldur's Gate 3. Hosts multiple mods as git submodul
 # Scaffold a new mod
 .\tools\New-Mod.ps1 -ModName "MyMod" -Template ui-mod -Author "YourName"
 
-# Link an existing mod to AppData for live testing
-.\tools\Link-Mod.ps1 -ModName "BaldursGateInventory"
+# Link a mod to AppData for live testing in BG3
+.\tools\Link-Mod.ps1 -ModName "MyMod"
 
 # Watch the BG3 log for your mod's output
-python .\tools\shared\watch_log.py
+python .\tools\shared\watch_log.py --mod "MyMod"
 
 # Pack a mod into a .pak for release
-.\tools\Pack-Mod.ps1 -ModName "BaldursGateInventory" -Version "1.0.0"
+.\tools\Pack-Mod.ps1 -ModName "MyMod" -Version "1.0.0"
 ```
 
 ## Structure
 
 ```
 BG3ModDev/
-├── mods/           # Git submodules — one per mod
+├── mods/           # Your mods go here (one folder per mod)
 ├── game-files/     # Unpacked game assets (gitignored, populate with Unpack-Game.ps1)
 ├── tools/          # PowerShell tooling + shared Python utilities
 ├── templates/      # Mod scaffolds (ui-mod, basic-lua-mod)
@@ -38,26 +38,27 @@ BG3ModDev/
 
 | Script | Purpose |
 |--------|---------|
-| `tools\Setup-Env.ps1` | First-time setup: paths, Divine download, submodule init |
+| `tools\Setup-Env.ps1` | First-time setup: paths, Divine download |
 | `tools\New-Mod.ps1` | Scaffold a new mod from a template |
-| `tools\Link-Mod.ps1` | Symlink mod → AppData for live BG3 testing |
-| `tools\Unlink-Mod.ps1` | Remove AppData symlink |
+| `tools\Link-Mod.ps1` | Link mod → AppData for live BG3 testing |
+| `tools\Unlink-Mod.ps1` | Remove AppData link |
 | `tools\Pack-Mod.ps1` | Pack mod folder into .pak for release |
 | `tools\Unpack-Game.ps1` | Extract game .pak files to game-files/ |
-| `tools\Sync-Env.ps1` | Update all submodules + re-link AppData junctions |
+| `tools\Sync-Env.ps1` | Re-link AppData junctions for all mods in mods/ |
 | `tools\shared\lint.py` | XAML + Lua linter |
 | `tools\shared\watch_log.py` | Tail BG3 script extender log |
 
-## Adding an Existing Mod
+## Adding a Mod
+
+Clone or create your mod inside `mods\`:
 
 ```powershell
-# If the mod has a remote repo:
-git submodule add <remote-url> mods/ModName
+# Scaffold a new mod from a template
+.\tools\New-Mod.ps1 -ModName "MyMod" -Template ui-mod
 
-# If the mod is local only:
-git submodule add ./mods/ModName
-
-.\tools\Link-Mod.ps1 -ModName "ModName"
+# Or clone an existing mod repo
+git clone <remote-url> mods\MyMod
+.\tools\Link-Mod.ps1 -ModName "MyMod"
 ```
 
 ## Templates
