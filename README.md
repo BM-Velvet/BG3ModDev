@@ -15,6 +15,12 @@ python -m bg3dev status
 
 # Launch the interactive app
 python -m bg3dev
+
+# Rename a mod repo and its in-mod identifiers
+python -m bg3dev rename-mod --mod InventoryExpanded --name InventoryExpanded --display-name "Inventory Expanded"
+
+# Build a beta package for testing
+python -m bg3dev package --mod InventoryExpanded --version 1.0.0 --beta
 ```
 
 ## Structure
@@ -26,7 +32,7 @@ BG3ModDev/
 |-- game-files/     # Local extracted/reference assets
 |-- tools/          # Reserved for future helpers outside the app
 |-- templates/      # Starter layouts and reference scaffolds
-|-- divine/         # Optional third-party packaging binaries
+|-- lslib/          # Optional LSlib bundle; Divine is auto-detected here
 |-- releases/       # Local build/export artifacts
 `-- docs/           # Notes on setup and workflow
 ```
@@ -37,14 +43,17 @@ BG3ModDev/
 - This repo is a shared workspace, not a parent repo that tracks child repos as submodules.
 - Git workflows such as commits and pushes still happen inside each mod repo.
 - Shared operational tasks like status, mod creation, deploy, packaging, and log watching run through `bg3dev`.
+- Packaging auto-detects `Divine.exe` from `lslib/Packed/Tools/Divine.exe` by default.
 
 ## App Capabilities
 
 - discover mods under `mods/`
 - show git, deploy, and readiness status
 - create a new mod from a template with placeholder replacement
+- rename a mod repo plus its metadata and Script Extender mod table together
 - deploy or undeploy a loose mod folder to `BG3\Data\Mods`
 - package a mod with Divine
+- package a beta `.pak` by appending `-beta` to the filename
 - optionally copy packaged `.pak` output to AppData `Mods`
 - run offline Lua tests when present
 - tail BG3 logs for a selected mod

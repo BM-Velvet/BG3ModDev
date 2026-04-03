@@ -17,6 +17,11 @@ handler = "package"
 requires_config = true
 requires_divine = true
 
+[actions.rename]
+label = "Rename Mod"
+description = "Rename the mod repo, metadata, and Script Extender mod table together."
+handler = "rename"
+
 [actions.validate]
 label = "Validate Mod"
 description = "Run lightweight structural validation for the mod."
@@ -38,4 +43,3 @@ requires_config = true
 label = "Open PowerShell"
 description = "Open a PowerShell prompt in the mod repo."
 handler = "open_shell"
-

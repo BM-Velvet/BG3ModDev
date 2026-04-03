@@ -20,6 +20,18 @@ Use the app to create a mod from a template:
 python -m bg3dev new-mod --name MyMod --template ui-mod --author YourName
 ```
 
+Rename a mod so the repo folder, `meta.lsx`, `ModTable`, and display name stay aligned:
+
+```powershell
+python -m bg3dev rename-mod --mod MyMod --name MyMod --display-name "My Mod"
+```
+
+Build a beta package for testers:
+
+```powershell
+python -m bg3dev package --mod MyMod --version 1.0.0 --beta
+```
+
 The app copies the template, replaces placeholders, generates a UUID, and initializes a git repo in the new mod folder.
 
 ## Workspace Boundaries
