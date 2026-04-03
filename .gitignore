@@ -1,6 +1,10 @@
 game-files/*
 !game-files/.gitkeep
 
+.bg3dev.local.toml
+__pycache__/
+*.py[cod]
+
 mods/*
 !mods/.gitkeep
 
