@@ -4,29 +4,23 @@ A Baldur's Gate 3 mod.
 
 ## Development
 
-```powershell
-# Watch BG3 log output
-python ../../tools/shared/watch_log.py --mod __MOD_NAME__
-
-# Lint Lua files
-python ../../tools/shared/lint.py --mod-root .
-```
+This template does not include shared scripts for watching logs, linting, or packaging. Add only the tooling this mod actually needs.
 
 ## Structure
 
-```
+```text
 Mod/
-└── ScriptExtender/
-    ├── Config.json          # SE config: ModTable, RequiredVersion
-    └── Lua/
-        ├── BootstrapClient.lua
-        ├── BootstrapServer.lua
-        ├── Client/
-        │   └── NetHandlers.lua
-        └── Server/
-            └── NetHandlers.lua
+`-- ScriptExtender/
+    |-- Config.json
+    `-- Lua/
+        |-- BootstrapClient.lua
+        |-- BootstrapServer.lua
+        |-- Client/
+        |   `-- NetHandlers.lua
+        `-- Server/
+            `-- NetHandlers.lua
 ```
 
 ## Net Channel Convention
 
-All net channel names should be prefixed with `__MOD_NAME___` to avoid collisions.
+Prefix net channel names with `__MOD_NAME___` to avoid collisions.
