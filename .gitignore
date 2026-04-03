@@ -1,6 +1,9 @@
 game-files/*
 !game-files/.gitkeep
 
+mods/*
+!mods/.gitkeep
+
 divine/*.exe
 divine/*.dll
 divine/*.zip

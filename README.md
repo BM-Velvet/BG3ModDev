@@ -1,69 +1,41 @@
 # BG3ModDev
 
-Modding dev environment for Baldur's Gate 3. Provides tooling for the full mod development lifecycle — scaffolding, live testing, packing for release, and unpacking game assets.
+Workspace for Baldur's Gate 3 mod development. It keeps templates, reference material, unpacked game files, release artifacts, and one or more mod repos under `mods/`.
 
-## Quick Start
-
-```powershell
-# First-time setup (run once per machine)
-.\tools\Setup-Env.ps1
-
-# Scaffold a new mod
-.\tools\New-Mod.ps1 -ModName "MyMod" -Template ui-mod -Author "YourName"
-
-# Link a mod to AppData for live testing in BG3
-.\tools\Link-Mod.ps1 -ModName "MyMod"
-
-# Watch the BG3 log for your mod's output
-python .\tools\shared\watch_log.py --mod "MyMod"
-
-# Pack a mod into a .pak for release
-.\tools\Pack-Mod.ps1 -ModName "MyMod" -Version "1.0.0"
-```
+The repo no longer ships an active toolchain. The `tools/` folder is intentionally kept as a placeholder for future utilities once a better workflow is settled.
 
 ## Structure
 
-```
+```text
 BG3ModDev/
-├── mods/           # Your mods go here (one folder per mod)
-├── game-files/     # Unpacked game assets (gitignored, populate with Unpack-Game.ps1)
-├── tools/          # PowerShell tooling + shared Python utilities
-├── templates/      # Mod scaffolds (ui-mod, basic-lua-mod)
-├── divine/         # LSLib CLI binary (downloaded by Setup-Env.ps1)
-├── releases/       # Packed .pak outputs (gitignored)
-└── docs/           # Setup and workflow reference
+|-- mods/           # Individual mod repos live here
+|-- game-files/     # Local extracted/reference assets
+|-- tools/          # Reserved for future tooling
+|-- templates/      # Starter layouts and reference scaffolds
+|-- divine/         # Optional third-party packaging binaries
+|-- releases/       # Local build/export artifacts
+`-- docs/           # Notes on setup and workflow
 ```
 
-## Tools Reference
+## Working Model
 
-| Script | Purpose |
-|--------|---------|
-| `tools\Setup-Env.ps1` | First-time setup: paths, Divine download |
-| `tools\New-Mod.ps1` | Scaffold a new mod from a template |
-| `tools\Link-Mod.ps1` | Link mod → AppData for live BG3 testing |
-| `tools\Unlink-Mod.ps1` | Remove AppData link |
-| `tools\Pack-Mod.ps1` | Pack mod folder into .pak for release |
-| `tools\Unpack-Game.ps1` | Extract game .pak files to game-files/ |
-| `tools\Sync-Env.ps1` | Re-link AppData junctions for all mods in mods/ |
-| `tools\shared\lint.py` | XAML + Lua linter |
-| `tools\shared\watch_log.py` | Tail BG3 script extender log |
+- Each mod keeps its own repository inside `mods/`.
+- This repo is a shared workspace, not a parent repo that tracks child repos as submodules.
+- Git workflows such as commits, hooks, pushes, and releases are handled inside each mod repo however that repo chooses.
 
 ## Adding a Mod
 
-Clone or create your mod inside `mods\`:
+Create or clone a repo into `mods/`:
 
 ```powershell
-# Scaffold a new mod from a template
-.\tools\New-Mod.ps1 -ModName "MyMod" -Template ui-mod
-
-# Or clone an existing mod repo
 git clone <remote-url> mods\MyMod
-.\tools\Link-Mod.ps1 -ModName "MyMod"
 ```
+
+You can also copy one of the templates into a new folder under `mods/` and initialize git there manually.
 
 ## Templates
 
-- **`ui-mod`** — Full XAML + Lua mod with one panel, MCM keybinding, client/server net channel, offline tests
-- **`basic-lua-mod`** — Minimal Lua-only mod (no UI)
+- `templates/ui-mod` - UI-oriented layout with XAML, Lua, tests, and placeholder `Tools/`
+- `templates/basic-lua-mod` - Minimal Lua-only layout
 
-See `docs/SETUP.md` for a full walkthrough.
+See [docs/SETUP.md](/C:/Users/BogdanMichon/Documents/BG3ModDev/docs/SETUP.md) and [docs/WORKFLOW.md](/C:/Users/BogdanMichon/Documents/BG3ModDev/docs/WORKFLOW.md) for the simplified workspace notes.
