@@ -2,40 +2,45 @@
 
 ## Purpose
 
-This workspace is intentionally light. It does not assume a shared automation stack, submodules, or repo-managed git hooks.
+This workspace stays light, but it has one shared terminal app for the core development loop.
 
 ## Prerequisites
 
 | Tool | Required | Notes |
 |------|----------|-------|
 | Git | Yes | For cloning this repo and each mod repo |
+| Python 3.11+ | Yes | Required for the `bg3dev` terminal app |
 | BG3 Script Extender | Usually | Needed by most Lua-based mods |
 | Mod Configuration Menu (MCM) | Sometimes | Needed by some UI mods |
-| Python / PowerShell / Divine | Optional | Only if a specific mod repo chooses to use them |
+| PowerShell / Divine | Optional | Used by some app actions depending on your workflow |
 
 ## Basic Setup
 
 1. Clone this workspace.
-2. Add one or more mod repos under `mods/`.
-3. Install whatever local dependencies each mod repo documents.
-4. Set up your own local BG3 testing workflow for live files, packaged files, logging, and asset extraction.
+2. Run `python -m bg3dev setup` and save your local BG3 paths.
+3. Add one or more mod repos under `mods/`.
+4. Install whatever local dependencies each mod repo documents.
 
 Example:
 
 ```powershell
 git clone <your-remote-url> BG3ModDev
 cd BG3ModDev
+python -m bg3dev setup
 git clone <mod-remote-url> mods\MyMod
 ```
 
 ## Local Conventions
 
 - `mods/` is for real mod repos.
+- `bg3dev/` contains the terminal app.
 - `templates/` is for starter structures and reference layouts.
 - `game-files/` and `releases/` are local workspace folders and are ignored by git.
-- `tools/` is currently a placeholder only.
+- `tools/` is still available for future helpers if the app should not own them.
 
 ## Notes
 
-- If you want junctions into BG3 `AppData`, packaging scripts, or log watchers, define them in the specific mod repo or add a new shared approach later.
-- If you use Divine or other third-party binaries, keep them local and document their usage where it matters.
+- The app writes its machine-local config to `.bg3dev.local.toml` and does not commit it.
+- If `.env.ps1` already exists, the app can use it as a legacy fallback until you save the new config.
+- Loose-folder deployment targets `BG3\Data\Mods`.
+- Packaged `.pak` copy actions target AppData `Mods`.

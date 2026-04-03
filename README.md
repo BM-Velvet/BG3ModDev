@@ -2,15 +2,29 @@
 
 Workspace for Baldur's Gate 3 mod development. It keeps templates, reference material, unpacked game files, release artifacts, and one or more mod repos under `mods/`.
 
-The repo no longer ships an active toolchain. The `tools/` folder is intentionally kept as a placeholder for future utilities once a better workflow is settled.
+The shared workflow lives in a small Python terminal app instead of a pile of scripts.
+
+## Quick Start
+
+```powershell
+# Save local machine paths
+python -m bg3dev setup
+
+# See workspace and mod status
+python -m bg3dev status
+
+# Launch the interactive app
+python -m bg3dev
+```
 
 ## Structure
 
 ```text
 BG3ModDev/
 |-- mods/           # Individual mod repos live here
+|-- bg3dev/         # Workspace terminal app
 |-- game-files/     # Local extracted/reference assets
-|-- tools/          # Reserved for future tooling
+|-- tools/          # Reserved for future helpers outside the app
 |-- templates/      # Starter layouts and reference scaffolds
 |-- divine/         # Optional third-party packaging binaries
 |-- releases/       # Local build/export artifacts
@@ -21,21 +35,37 @@ BG3ModDev/
 
 - Each mod keeps its own repository inside `mods/`.
 - This repo is a shared workspace, not a parent repo that tracks child repos as submodules.
-- Git workflows such as commits, hooks, pushes, and releases are handled inside each mod repo however that repo chooses.
+- Git workflows such as commits and pushes still happen inside each mod repo.
+- Shared operational tasks like status, mod creation, deploy, packaging, and log watching run through `bg3dev`.
+
+## App Capabilities
+
+- discover mods under `mods/`
+- show git, deploy, and readiness status
+- create a new mod from a template with placeholder replacement
+- deploy or undeploy a loose mod folder to `BG3\Data\Mods`
+- package a mod with Divine
+- optionally copy packaged `.pak` output to AppData `Mods`
+- run offline Lua tests when present
+- tail BG3 logs for a selected mod
 
 ## Adding a Mod
 
-Create or clone a repo into `mods/`:
+Create a new mod:
+
+```powershell
+python -m bg3dev new-mod --name MyMod --template ui-mod --author YourName
+```
+
+Or clone an existing repo into `mods/`:
 
 ```powershell
 git clone <remote-url> mods\MyMod
 ```
-
-You can also copy one of the templates into a new folder under `mods/` and initialize git there manually.
 
 ## Templates
 
 - `templates/ui-mod` - UI-oriented layout with XAML, Lua, tests, and placeholder `Tools/`
 - `templates/basic-lua-mod` - Minimal Lua-only layout
 
-See [docs/SETUP.md](/C:/Users/BogdanMichon/Documents/BG3ModDev/docs/SETUP.md) and [docs/WORKFLOW.md](/C:/Users/BogdanMichon/Documents/BG3ModDev/docs/WORKFLOW.md) for the simplified workspace notes.
+See [docs/SETUP.md](/C:/Users/BogdanMichon/Documents/BG3ModDev/docs/SETUP.md) and [docs/WORKFLOW.md](/C:/Users/BogdanMichon/Documents/BG3ModDev/docs/WORKFLOW.md) for the workspace workflow.

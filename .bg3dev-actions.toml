@@ -1,0 +1,41 @@
+[actions.deploy]
+label = "Deploy Mod"
+description = "Create or repair the BG3 AppData deployment target for the mod."
+handler = "deploy"
+requires_config = true
+
+[actions.undeploy]
+label = "Remove Deployment"
+description = "Remove the BG3 AppData deployment target for the mod."
+handler = "undeploy"
+requires_config = true
+
+[actions.package]
+label = "Package Mod"
+description = "Build a .pak for the mod using Divine."
+handler = "package"
+requires_config = true
+requires_divine = true
+
+[actions.validate]
+label = "Validate Mod"
+description = "Run lightweight structural validation for the mod."
+handler = "validate"
+
+[actions.test]
+label = "Run Tests"
+description = "Run offline Lua tests through Tests/TestRunner.lua."
+handler = "run_tests"
+requires_tests = true
+
+[actions.watch_log]
+label = "Watch Log"
+description = "Tail the BG3 script log filtered to this mod."
+handler = "watch_log"
+requires_config = true
+
+[actions.open_shell]
+label = "Open PowerShell"
+description = "Open a PowerShell prompt in the mod repo."
+handler = "open_shell"
+
