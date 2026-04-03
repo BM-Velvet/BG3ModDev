@@ -8,12 +8,13 @@ from .actions import (
     deploy_mod,
     open_shell,
     package_mod,
+    rename_mod,
     run_lua_tests,
     tail_log,
     undeploy_mod,
     validate_mod,
 )
-from .config import AppConfig, load_config, write_config
+from .config import AppConfig, default_divine_path, load_config, write_config
 from .models import ModInfo
 from .registry import ActionSpec, load_registry
 from .templates import NewModRequest, available_templates, create_mod
@@ -40,6 +41,8 @@ def main() -> int:
         return 0
     if args.command == "new-mod":
         return cmd_new_mod(repo_root, args)
+    if args.command == "rename-mod":
+        return with_mod(args.mod, mods, lambda mod: print(rename_mod(mod, args.name, args.display_name, config)))
     if args.command == "deploy":
         return with_mod(args.mod, mods, lambda mod: print(deploy_mod(mod, require_config(config), repair=args.repair)))
     if args.command == "undeploy":
@@ -48,7 +51,7 @@ def main() -> int:
         return with_mod(
             args.mod,
             mods,
-            lambda mod: print(package_mod(mod, require_config(config), choose_version(args), args.copy_to_appdata)),
+            lambda mod: print(package_mod(mod, require_config(config), choose_version(args), args.copy_to_appdata, args.beta)),
         )
     if args.command == "validate":
         return with_mod(args.mod, mods, lambda mod: print_validation(mod))
@@ -76,6 +79,11 @@ def build_parser() -> ArgumentParser:
     new_mod.add_argument("--template", required=False)
     new_mod.add_argument("--author", required=False)
 
+    rename = sub.add_parser("rename-mod", help="Rename a mod repo and its in-mod identifiers")
+    rename.add_argument("--mod", required=True)
+    rename.add_argument("--name", required=True)
+    rename.add_argument("--display-name", required=False)
+
     deploy = sub.add_parser("deploy", help="Deploy a mod to BG3 Data\\Mods")
     deploy.add_argument("--mod", required=True)
     deploy.add_argument("--repair", action="store_true")
@@ -87,6 +95,7 @@ def build_parser() -> ArgumentParser:
     package.add_argument("--mod", required=True)
     package.add_argument("--version", required=False)
     package.add_argument("--copy-to-appdata", action="store_true")
+    package.add_argument("--beta", action="store_true")
 
     validate = sub.add_parser("validate", help="Validate a mod")
     validate.add_argument("--mod", required=True)
@@ -104,8 +113,11 @@ def build_parser() -> ArgumentParser:
     action = sub.add_parser("run-action", help="Run a registered action")
     action.add_argument("--mod", required=False)
     action.add_argument("--action", required=True)
+    action.add_argument("--name", required=False)
+    action.add_argument("--display-name", required=False)
     action.add_argument("--version", required=False)
     action.add_argument("--copy-to-appdata", action="store_true")
+    action.add_argument("--beta", action="store_true")
     action.add_argument("--repair", action="store_true")
 
     return parser
@@ -123,9 +135,10 @@ def run_interactive(
         print("Main Menu")
         print("  1. Setup workspace config")
         print("  2. Create new mod")
-        print("  3. View mod details")
-        print("  4. Watch BG3 log")
-        print("  5. Refresh")
+        print("  3. Rename mod")
+        print("  4. View mod details")
+        print("  5. Watch BG3 log")
+        print("  6. Refresh")
         print("  0. Exit")
         choice = input("> ").strip()
         if choice == "1":
@@ -141,14 +154,22 @@ def run_interactive(
                 continue
             mod = choose_mod(mods)
             if mod:
-                run_mod_menu(mod, config, registry)
+                cmd_rename_mod(mod, config)
                 mods = discover_mods(repo_root, load_config(repo_root))
         elif choice == "4":
+            if not mods:
+                print("No mods found.")
+                continue
+            mod = choose_mod(mods)
+            if mod:
+                run_mod_menu(mod, config, registry)
+                mods = discover_mods(repo_root, load_config(repo_root))
+        elif choice == "5":
             try:
                 tail_log(require_config(config))
             except Exception as exc:  # noqa: BLE001
                 print(f"ERROR: {exc}")
-        elif choice == "5":
+        elif choice == "6":
             config = load_config(repo_root)
             mods = discover_mods(repo_root, config)
         elif choice == "0":
@@ -171,7 +192,7 @@ def run_mod_menu(mod: ModInfo, config: AppConfig | None, registry: dict[str, Act
             continue
         spec = available[int(choice) - 1]
         try:
-            run_action(spec, mod, config, Namespace(version=None, copy_to_appdata=False, repair=False))
+            run_action(spec, mod, config, Namespace(version=None, copy_to_appdata=False, beta=False, repair=False))
         except Exception as exc:  # noqa: BLE001
             print(f"ERROR: {exc}")
 
@@ -206,11 +227,20 @@ def run_action(spec: ActionSpec, mod: ModInfo | None, config: AppConfig | None, 
     if spec.handler == "deploy":
         print(deploy_mod(require_mod(mod), require_config(config), repair=args.repair))
         return 0
+    if spec.handler == "rename":
+        target = require_mod(mod)
+        name = getattr(args, "name", None) or input("New internal mod name: ").strip()
+        display_name = getattr(args, "display_name", None)
+        if not display_name:
+            default_display = target.meta.name or name or target.name
+            display_name = input(f"Display name [{default_display}]: ").strip() or default_display
+        print(rename_mod(target, name, display_name, config))
+        return 0
     if spec.handler == "undeploy":
         print(undeploy_mod(require_mod(mod), require_config(config)))
         return 0
     if spec.handler == "package":
-        print(package_mod(require_mod(mod), require_config(config), choose_version(args), args.copy_to_appdata))
+        print(package_mod(require_mod(mod), require_config(config), choose_version(args), args.copy_to_appdata, args.beta))
         return 0
     if spec.handler == "validate":
         return print_validation(require_mod(mod))
@@ -317,6 +347,15 @@ def cmd_new_mod(repo_root: Path, args: Namespace) -> int:
     return 0
 
 
+def cmd_rename_mod(mod: ModInfo, config: AppConfig | None) -> int:
+    default_name = mod.mod_table or mod.meta.folder or mod.name
+    name = input(f"New internal mod name [{default_name}]: ").strip() or default_name
+    display_default = mod.meta.name or name
+    display_name = input(f"Display name [{display_default}]: ").strip() or display_default
+    print(rename_mod(mod, name, display_name, config))
+    return 0
+
+
 def choose_template(templates: list[str]) -> str:
     print("Template")
     for index, name in enumerate(templates, start=1):
@@ -332,7 +371,7 @@ def run_setup(repo_root: Path, existing: AppConfig | None) -> None:
     defaults = existing or AppConfig(
         bg3_game_path=Path(r"C:\Program Files (x86)\Steam\steamapps\common\Baldurs Gate 3"),
         bg3_appdata_path=Path.home() / "AppData" / "Local" / "Larian Studios" / "Baldur's Gate 3",
-        divine_path=repo_root / "divine" / "divine.exe",
+        divine_path=default_divine_path(repo_root),
         multitool_path=Path.home() / "Documents" / "BG3ModdersMultitool",
         release_dir=repo_root / "releases",
     )
