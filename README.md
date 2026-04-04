@@ -21,6 +21,9 @@ python -m bg3dev rename-mod --mod InventoryExpanded --name InventoryExpanded --d
 
 # Build a beta package for testing
 python -m bg3dev package --mod InventoryExpanded --version 1.0.0 --beta
+
+# Publish a clean beta snapshot to the public remote
+python -m bg3dev publish-public --mod InventoryExpanded --beta --version v0.1.0-beta
 ```
 
 ## Structure
@@ -57,6 +60,7 @@ BG3ModDev/
 - optionally copy packaged `.pak` output to AppData `Mods`
 - run offline Lua tests when present
 - tail BG3 logs for a selected mod
+- publish a clean public release snapshot without exposing private git history
 
 ## Adding a Mod
 

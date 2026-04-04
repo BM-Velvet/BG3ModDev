@@ -43,3 +43,8 @@ requires_config = true
 label = "Open PowerShell"
 description = "Open a PowerShell prompt in the mod repo."
 handler = "open_shell"
+
+[actions.publish_public]
+label = "Publish Public Release"
+description = "Push a clean one-commit snapshot of the current mod HEAD to the public remote."
+handler = "publish_public"

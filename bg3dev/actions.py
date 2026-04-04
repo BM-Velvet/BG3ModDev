@@ -8,6 +8,8 @@ import os
 import re
 import shutil
 import subprocess
+import tarfile
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 
@@ -294,3 +296,52 @@ def choose_version(args: argparse.Namespace) -> str:
         return args.version
     value = input("Package version [1.0.0]: ").strip()
     return value or "1.0.0"
+
+
+def publish_public_release(
+    mod: ModInfo,
+    message: str,
+    remote: str = "public",
+    branch: str = "main",
+) -> str:
+    if not mod.git.is_repo:
+        raise RuntimeError("Cannot publish a public release for a folder that is not a git repo.")
+    if mod.git.dirty:
+        raise RuntimeError("Refusing to publish from a dirty worktree. Commit or stash changes first.")
+
+    remote_url = _git_output(mod.path, "remote", "get-url", remote)
+    if not remote_url:
+        raise RuntimeError(f"Git remote not found: {remote}")
+
+    with tempfile.TemporaryDirectory(prefix=f"bg3dev-public-{mod.name}-") as temp_dir:
+        temp_root = Path(temp_dir)
+        archive_path = temp_root / "snapshot.tar"
+        export_dir = temp_root / "export"
+        export_dir.mkdir(parents=True, exist_ok=True)
+
+        _git(mod.path, "archive", "--format=tar", "HEAD", "-o", str(archive_path))
+        with tarfile.open(archive_path) as archive:
+            archive.extractall(export_dir)
+
+        _git(export_dir, "init", "-b", branch)
+        _git(export_dir, "remote", "add", "origin", remote_url)
+        _git(export_dir, "add", ".")
+        _git(export_dir, "commit", "-m", message)
+        _git(export_dir, "push", "--force", "origin", branch)
+
+    return f"Published clean public release for {mod.name} to {remote}/{branch}: {message}"
+
+
+def _git(path: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=path, check=True)
+
+
+def _git_output(path: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
