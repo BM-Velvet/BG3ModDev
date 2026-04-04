@@ -8,6 +8,7 @@ from .actions import (
     deploy_mod,
     open_shell,
     package_mod,
+    publish_public_release,
     rename_mod,
     run_lua_tests,
     tail_log,
@@ -62,6 +63,12 @@ def main() -> int:
         return tail_log(require_config(config), handle=handle)
     if args.command == "open-shell":
         return with_mod(args.mod, mods, lambda mod: print(open_shell(mod)))
+    if args.command == "publish-public":
+        return with_mod(
+            args.mod,
+            mods,
+            lambda mod: print(publish_public_release(mod, choose_release_message(args), args.remote, args.branch)),
+        )
     if args.command == "run-action":
         return cmd_run_action(args, config, mods, registry)
     raise RuntimeError(f"Unknown command: {args.command}")
@@ -110,6 +117,14 @@ def build_parser() -> ArgumentParser:
     shell = sub.add_parser("open-shell", help="Open a PowerShell prompt in a mod repo")
     shell.add_argument("--mod", required=True)
 
+    publish = sub.add_parser("publish-public", help="Publish a clean one-commit snapshot to a public remote")
+    publish.add_argument("--mod", required=True)
+    publish.add_argument("--message", required=False)
+    publish.add_argument("--remote", default="public")
+    publish.add_argument("--branch", default="main")
+    publish.add_argument("--beta", action="store_true")
+    publish.add_argument("--version", required=False)
+
     action = sub.add_parser("run-action", help="Run a registered action")
     action.add_argument("--mod", required=False)
     action.add_argument("--action", required=True)
@@ -119,6 +134,9 @@ def build_parser() -> ArgumentParser:
     action.add_argument("--copy-to-appdata", action="store_true")
     action.add_argument("--beta", action="store_true")
     action.add_argument("--repair", action="store_true")
+    action.add_argument("--message", required=False)
+    action.add_argument("--remote", default="public")
+    action.add_argument("--branch", default="main")
 
     return parser
 
@@ -252,6 +270,9 @@ def run_action(spec: ActionSpec, mod: ModInfo | None, config: AppConfig | None, 
         return tail_log(require_config(config), handle=handle)
     if spec.handler == "open_shell":
         print(open_shell(require_mod(mod)))
+        return 0
+    if spec.handler == "publish_public":
+        print(publish_public_release(require_mod(mod), choose_release_message(args), args.remote, args.branch))
         return 0
     raise RuntimeError(f"Unsupported action handler: {spec.handler}")
 
@@ -391,6 +412,19 @@ def prompt_path(label: str, default: Path | None) -> str:
     suffix = f" [{default}]" if default else ""
     value = input(f"{label}{suffix}: ").strip()
     return value or str(default or "")
+
+
+def choose_release_message(args: Namespace) -> str:
+    if getattr(args, "message", None):
+        return args.message
+    if getattr(args, "beta", False):
+        version = getattr(args, "version", None)
+        return f"Beta release {version}" if version else "Beta release"
+    version = getattr(args, "version", None)
+    if version:
+        return f"Release {version}"
+    value = input("Public release commit message [Release]: ").strip()
+    return value or "Release"
 
 
 def with_mod(mod_name: str, mods: list[ModInfo], fn) -> int:
